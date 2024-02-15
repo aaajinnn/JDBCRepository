@@ -14,13 +14,13 @@ public class DBConnect_Oracle {
 
 			// 2. DB연결 => DriverManager.getConnection()을 이용
 			String url = "jdbc:oracle:thin:@localhost:1521:XE"; // DB접속 url정보.
-			// 프로토콜:DBMS 유헝:드라이브타입:@host IP주소:port:전역데이터베이스
+			// 프로토콜:DBMS 유형:드라이브타입:@host IP주소:port:전역데이터베이스
 			String user = "scott", pwd = "tiger";
 
 			Connection con = DriverManager.getConnection(url, user, pwd);
 			System.out.println("DB Connected...");
 
-			// SQL문 작성 => java_member테이블을 생성하는 문장
+			// 3. SQL문 작성 => java_member테이블을 생성하는 문장
 			String sql = "CREATE TABLE java_member(";
 			sql += " id varchar2(20) primary key,";
 			sql += " pw varchar2(10) not null,";
@@ -49,7 +49,7 @@ public class DBConnect_Oracle {
 		} catch (ClassNotFoundException e) { // Driver 로딩 error
 			System.out.println("Driver Loading Fail...");
 			e.printStackTrace();
-		} catch (SQLException e) {// DB연결 에러
+		} catch (SQLException e) {// DB연결 error
 			System.out.println("SQL Error...");
 			e.printStackTrace();
 		}
