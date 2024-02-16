@@ -10,6 +10,7 @@ public class DBConnect_Oracle {
 		try {
 			// 1. Driver 로딩
 			Class.forName("oracle.jdbc.driver.OracleDriver"); // 통역사 역할
+			// OracleDriver객체를 생성해서 DriverManager에 드라이버를 등록한다.
 			System.out.println("Driver Loading Success...");
 
 			// 2. DB연결 => DriverManager.getConnection()을 이용
