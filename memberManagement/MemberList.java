@@ -30,10 +30,13 @@ public class MemberList extends JFrame {
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 
-		textArea = new JTextArea();
-		textArea.setBounds(12, 10, 360, 541);
-		textArea.setEditable(false);
-		panel.add(textArea);
-	}
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(12, 10, 360, 541);
+		panel.add(scrollPane);
 
+		textArea = new JTextArea();
+		scrollPane.setViewportView(textArea);
+		textArea.setEditable(false);
+
+	}
 }

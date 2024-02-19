@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.awt.Color;
 import java.sql.*;
 import java.util.Date;
+import java.awt.event.*;
 
 public class MemberJoin extends JFrame {
 
@@ -21,6 +22,7 @@ public class MemberJoin extends JFrame {
 	private static JPasswordField passwordField;
 	private static JTextField tf_name;
 	private static JTextField tf_tel;
+	private static JButton btn_join, btn_delete, btn_list;
 	public static JTextArea textArea;
 
 	static Connection con;
@@ -29,6 +31,9 @@ public class MemberJoin extends JFrame {
 
 	MemberJoin() {
 		super(":::회원가입:::");
+
+		JDBCConnection();
+
 		cp = this.getContentPane();
 
 		panel = new JPanel();
@@ -84,7 +89,7 @@ public class MemberJoin extends JFrame {
 		tf_tel.setBounds(146, 296, 214, 35);
 		panel.add(tf_tel);
 
-		JButton btn_join = new JButton("회원가입 완료");
+		btn_join = new JButton("회원가입 완료");
 		btn_join.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				join();
@@ -96,7 +101,7 @@ public class MemberJoin extends JFrame {
 		btn_join.setBounds(30, 355, 330, 45);
 		panel.add(btn_join);
 
-		JButton btn_delete = new JButton("회원 탈퇴");
+		btn_delete = new JButton("회원 탈퇴");
 		btn_delete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				delete();
@@ -108,7 +113,7 @@ public class MemberJoin extends JFrame {
 		btn_delete.setBounds(30, 418, 330, 45);
 		panel.add(btn_delete);
 
-		JButton btn_list = new JButton("모든 회원 목록");
+		btn_list = new JButton("모든 회원 목록");
 		btn_list.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				select();
@@ -123,13 +128,27 @@ public class MemberJoin extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	// 메시지박스
-	public void showMsg(JPanel p, String msg) {
-		JOptionPane.showMessageDialog(p, msg);
+	// JDBC 드라이버 연결
+	public void JDBCConnection() {
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			System.out.println("드라이버 로딩 성공");
+
+			String url = "jdbc:oracle:thin:@localhost:1521:XE";
+			String user = "scott", pwd = "tiger";
+
+			con = DriverManager.getConnection(url, user, pwd);
+			System.out.println("DB연결 성공");
+
+		} catch (ClassNotFoundException ce) {
+			System.out.println("드라이버 로딩 실패");
+		} catch (SQLException se) {
+			System.out.println("DB연결 실패");
+		}
 	}
 
-	// 자원반납
-	private void close(Connection con, Statement stmt, ResultSet rs) {
+	// 연결 닫기
+	public void close(Connection con, Statement stmt, ResultSet rs) {
 		try {
 			if (rs != null)
 				rs.close();
@@ -138,13 +157,18 @@ public class MemberJoin extends JFrame {
 			if (con != null)
 				con.close();
 		} catch (Exception e) {
-			System.out.println("자원반납 중 오류발생 : " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
+	// 메시지박스
+	public void showMsg(JPanel p, String msg) {
+		JOptionPane.showMessageDialog(p, msg);
+	}
+
 	// 회원가입
 	public void join() {
+
 		String id = tf_id.getText();
 		char[] ch = passwordField.getPassword();
 		String pw = new String(ch);
@@ -165,25 +189,26 @@ public class MemberJoin extends JFrame {
 				tf_name.requestFocus();
 				return;
 			} else {
+				// 1. 회원가입처리
+				String insert = "INSERT INTO java_member(id, pw, name, tel, indate) ";
+				insert += " VALUES ('" + id + "','" + pw + "','" + name + "','" + tel + "',sysdate)";
+				System.out.println(insert);
+
+				stmt = con.createStatement();
+				int insertcnt = stmt.executeUpdate(insert);
+				System.out.println(insertcnt + "개의 레코드를 삽입했습니다.");
+
 				showMsg(panel, "회원가입이 완료 되었습니다.");
 				tf_id.setText("");
 				passwordField.setText("");
 				tf_name.setText("");
 				tf_tel.setText("");
 			}
-			// 1. 회원가입처리
-			String insert = "INSERT INTO java_member(id, pw, name, tel, indate) ";
-			insert += " VALUES ('" + id + "','" + pw + "','" + name + "','" + tel + "',sysdate)";
-			System.out.println(insert);
-
-			stmt = con.createStatement();
-			int insertcnt = stmt.executeUpdate(insert);
-			System.out.println(insertcnt + "개의 레코드를 삽입했습니다.");
-
 		} catch (SQLException e) {
 			System.out.println("insert시 예외 발생 : " + e.getMessage());
+		} finally {
+			close(con, stmt, rs);
 		}
-//		close(con, stmt, rs);
 
 	}
 
@@ -193,43 +218,50 @@ public class MemberJoin extends JFrame {
 
 		if (id == null || id.equals("")) {
 			showMsg(panel, "아이디를 입력하셔야 합니다.");
+			return;
 		}
 
 		try {
 			// 2. 회원탈퇴처리
-			String delete = "DELETE FROM java_member ";
-			delete += " WHERE id = " + "'" + id + "'";
+			String delete = "DELETE FROM java_member WHERE id = " + "'" + id + "'";
 			System.out.println(delete);
 
-			Statement stmt = con.createStatement();
-
 			String sql = "SELECT id FROM java_member WHERE id = '" + id + "'";
+			System.out.println(sql);
+
+			stmt = con.createStatement();
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				String deleteid = rs.getString("id");
+//				boolean idCheck = (deleteid == null) ? true : false;
+//
+//				if (idCheck == true) {
+//					System.out.println("탈퇴할 ID : " + deleteid);
+//					showMsg(panel, "존재하지 않는 ID입니다.");
+//
+//				}
 				if (id.equals(deleteid)) {
 					System.out.println("탈퇴할 ID : " + deleteid);
 					showMsg(panel, deleteid + "님, 정말로 탈퇴하시겠습니까?");
+
 					int deletecnt = stmt.executeUpdate(delete);
 
+					tf_id.setText("");
 					showMsg(panel, "탈퇴처리 되었습니다.");
 					System.out.println(deletecnt + "개의 레코드를 삭제하였습니다.");
 				}
-				// 존재하지 않는 ID일 경우
-//				if (!id.equals(deleteid)) {
-//					System.out.println("탈퇴할 ID : " + deleteid);
-//					showMsg(panel, "존재하지 않는 ID입니다.");
-//				}
 			}
-			tf_id.setText("");
 			tf_id.requestFocus();
 
 		} catch (SQLException e) {
 			System.out.println("delete시 예외 발생 : " + e.getMessage());
 		} catch (NullPointerException e) {
 			System.out.println("탈퇴할 ID검색 시 예외 발생 : " + e.getMessage());
+		} finally {
+			close(con, stmt, rs);
 		}
-//		close(con, stmt, rs);
+
 	}
 
 	// 모든회원보기
@@ -257,8 +289,9 @@ public class MemberJoin extends JFrame {
 		} catch (SQLException e) {
 			System.out.println("select시 예외 발생 : " + e.getMessage());
 			e.printStackTrace();
+		} finally {
+			close(con, stmt, rs);
 		}
-		close(con, stmt, rs);
 
 	}
 
@@ -267,21 +300,6 @@ public class MemberJoin extends JFrame {
 		memberJoin.setSize(400, 600);
 		memberJoin.setVisible(true);
 
-		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			System.out.println("드라이버 로딩 성공");
-
-			String url = "jdbc:oracle:thin:@localhost:1521:XE";
-			String user = "scott", pwd = "tiger";
-
-			con = DriverManager.getConnection(url, user, pwd);
-			System.out.println("DB연결 성공");
-
-		} catch (ClassNotFoundException ce) {
-			System.out.println("드라이버 로딩 실패");
-		} catch (SQLException se) {
-			System.out.println("DB연결 실패");
-		}
-
 	}
+
 }
