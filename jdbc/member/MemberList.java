@@ -1,4 +1,4 @@
-package memberManagement;
+package jdbc.member;
 
 import javax.swing.*;
 import java.awt.BorderLayout;
@@ -25,13 +25,13 @@ public class MemberList extends JFrame {
 		super(":::회원 목록:::");
 		cp = this.getContentPane();
 
-		setBounds(385, 0, 400, 600);
+		setBounds(385, 0, 300, 250);
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(12, 10, 360, 541);
+		scrollPane.setBounds(12, 10, 260, 191);
 		panel.add(scrollPane);
 
 		textArea = new JTextArea();

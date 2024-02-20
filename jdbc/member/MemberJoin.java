@@ -1,8 +1,11 @@
-package memberManagement;
+package jdbc.member;
 
 import java.awt.Container;
 
 import javax.swing.*;
+
+import com.mysql.cj.x.protobuf.MysqlxConnection.Close;
+
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.SystemColor;
@@ -28,21 +31,22 @@ public class MemberJoin extends JFrame {
 	static Connection con;
 	static Statement stmt;
 	static ResultSet rs;
+	static PreparedStatement ps;
 
 	MemberJoin() {
 		super(":::회원가입:::");
 
-		JDBCConnection();
-
 		cp = this.getContentPane();
 
 		panel = new JPanel();
+		panel.setBackground(new Color(0, 204, 102));
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 
-		JLabel lblNewLabel = new JLabel("join us!");
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setIcon(new ImageIcon(MemberJoin.class.getResource("/jdbc/member/logo.png")));
 		lblNewLabel.setFont(new Font("맑은 고딕", Font.BOLD, 40));
-		lblNewLabel.setBounds(117, 21, 186, 84);
+		lblNewLabel.setBounds(61, 22, 253, 84);
 		panel.add(lblNewLabel);
 
 		JLabel lb_id = new JLabel("ID");
@@ -128,25 +132,6 @@ public class MemberJoin extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	// JDBC 드라이버 연결
-	public void JDBCConnection() {
-		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			System.out.println("드라이버 로딩 성공");
-
-			String url = "jdbc:oracle:thin:@localhost:1521:XE";
-			String user = "scott", pwd = "tiger";
-
-			con = DriverManager.getConnection(url, user, pwd);
-			System.out.println("DB연결 성공");
-
-		} catch (ClassNotFoundException ce) {
-			System.out.println("드라이버 로딩 실패");
-		} catch (SQLException se) {
-			System.out.println("DB연결 실패");
-		}
-	}
-
 	// 연결 닫기
 	public void close(Connection con, Statement stmt, ResultSet rs) {
 		try {
@@ -190,74 +175,72 @@ public class MemberJoin extends JFrame {
 				return;
 			} else {
 				// 1. 회원가입처리
-				String insert = "INSERT INTO java_member(id, pw, name, tel, indate) ";
-				insert += " VALUES ('" + id + "','" + pw + "','" + name + "','" + tel + "',sysdate)";
-				System.out.println(insert);
+				con = DBConnection.getCon();
+				System.out.println("DB Connection...");
 
-				stmt = con.createStatement();
-				int insertcnt = stmt.executeUpdate(insert);
-				System.out.println(insertcnt + "개의 레코드를 삽입했습니다.");
+				String sql = "INSERT INTO java_member(id, pw, name, tel, indate) ";
+				sql += " VALUES (? ,?, ?, ?,sysdate)";
+
+				ps = con.prepareStatement(sql);
+
+				ps.setString(1, id);
+				ps.setString(2, pw);
+				ps.setString(3, name);
+				ps.setString(4, tel);
+
+				int cnt = ps.executeUpdate();
+				System.out.println(cnt + "개의 레코드 삽입 완료");
 
 				showMsg(panel, "회원가입이 완료 되었습니다.");
 				tf_id.setText("");
 				passwordField.setText("");
 				tf_name.setText("");
 				tf_tel.setText("");
+
+				close(con, stmt, rs);
+
 			}
 		} catch (SQLException e) {
 			System.out.println("insert시 예외 발생 : " + e.getMessage());
 		} finally {
-			close(con, stmt, rs);
 		}
 
 	}
 
 	// 회원탈퇴
 	public void delete() {
-		String id = tf_id.getText();
+		String getId = tf_id.getText();
 
-		if (id == null || id.equals("")) {
+		if (getId == null || getId.equals("")) {
 			showMsg(panel, "아이디를 입력하셔야 합니다.");
 			return;
 		}
 
 		try {
 			// 2. 회원탈퇴처리
-			String delete = "DELETE FROM java_member WHERE id = " + "'" + id + "'";
-			System.out.println(delete);
+			con = DBConnection.getCon();
+			System.out.println("DB Connection...");
 
-			String sql = "SELECT id FROM java_member WHERE id = '" + id + "'";
+			String sql = "DELETE FROM java_member WHERE id = ?";
 			System.out.println(sql);
 
-			stmt = con.createStatement();
+			ps = con.prepareStatement(sql);
+			ps.setString(1, getId);
 
-			rs = stmt.executeQuery(sql);
-			while (rs.next()) {
-				String deleteid = rs.getString("id");
-//				boolean idCheck = (deleteid == null) ? true : false;
-//
-//				if (idCheck == true) {
-//					System.out.println("탈퇴할 ID : " + deleteid);
-//					showMsg(panel, "존재하지 않는 ID입니다.");
-//
-//				}
-				if (id.equals(deleteid)) {
-					System.out.println("탈퇴할 ID : " + deleteid);
-					showMsg(panel, deleteid + "님, 정말로 탈퇴하시겠습니까?");
-
-					int deletecnt = stmt.executeUpdate(delete);
-
-					tf_id.setText("");
-					showMsg(panel, "탈퇴처리 되었습니다.");
-					System.out.println(deletecnt + "개의 레코드를 삭제하였습니다.");
-				}
+			int cnt = ps.executeUpdate();
+			if (cnt > 0) {
+				showMsg(panel, getId + "님, 정말로 탈퇴하시겠습니까?");
+				System.out.println(cnt + "개의 레코드 삭제 완료");
+				showMsg(panel, "정상적으로 탈퇴되었습니다.");
+				tf_id.setText("");
+			}
+			if (cnt == 0) {
+				showMsg(panel, "존재하지 않는 아이디입니다.");
 			}
 			tf_id.requestFocus();
 
 		} catch (SQLException e) {
 			System.out.println("delete시 예외 발생 : " + e.getMessage());
-		} catch (NullPointerException e) {
-			System.out.println("탈퇴할 ID검색 시 예외 발생 : " + e.getMessage());
 		} finally {
 			close(con, stmt, rs);
 		}
@@ -272,15 +255,19 @@ public class MemberJoin extends JFrame {
 		System.out.println(sql);
 
 		try {
+			con = DBConnection.getCon();
 			stmt = con.createStatement();
 			rs = stmt.executeQuery(sql);
 			MemberList memberList = new MemberList();
 
+			memberList.textArea.append("이름\t아이디\t연락처\t가입일\n");
+			memberList.textArea
+					.append("-----------------------------------------------------------------------------------\n");
 			str = "";
 			while (rs.next()) {
-				str = rs.getString("name") + "   ";
-				str += rs.getString("id") + "   ";
-				str += rs.getString("tel") + "   ";
+				str = rs.getString("name") + "\t";
+				str += rs.getString("id") + "\t";
+				str += rs.getString("tel") + "\t";
 				str += rs.getDate("indate") + "\n";
 				System.out.println(str);
 				memberList.textArea.append(str);
