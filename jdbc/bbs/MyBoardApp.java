@@ -4,22 +4,40 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+/* 디자인 패턴
+ * - MVC패턴
+ * 		- M(Model)데이터를 가지는 부분 DAO, VO ==> Data Layer
+ * 		- V(View) : 화면(UI)를 구성하는 부분 MyBoardApp(Swing) ==> Presentation Layer
+ * 		- C(Controller) : Model과 View사이에서 제어하는 부분 MyEventHandler ==> Application Layer
+ * 							사용자가 입력한 값을 모델에 넘긴다.
+ * 							DB에서 가져온 값을 화면쪽에 보여준다
+ * 							...
+ * 							제어 흐름을 담당하는 부분
+ * 
+ * */
 
 // 화면 계층(Presentation Layer) => GUI를 구성
 public class MyBoardApp extends JFrame {
-	private JTextField loginId;
-	private JPasswordField loginPwd;
-	private JTextField tfId;
-	private JTextField tfPw;
-	private JTextField tfName;
-	private JTextField tfTel;
-	private CardLayout card;
-	private JTextField tfNo;
-	private JTextField tfWriter;
-	private JTextField tfTitle;
+	// 핸들러에 접근하기 위해서는 private 제거=>생략형으로(같은패키지에서는 접근가능하기때문에 생략해줌)
+
+	// 화면
+	JTextField loginId;
+	JPasswordField loginPwd;
+	JTextField tfId;
+	JTextField tfPw;
+	JTextField tfName;
+	JTextField tfTel;
+	CardLayout card;
+	JTextField tfNo;
+	JTextField tfWriter;
+	JTextField tfTitle;
 	JButton btLogin, btJoin, btDel, btList, btClear;
 	JButton bbsWrite, bbsDel, bbsFind, bbsList;
 	JTextArea taMembers, taList, taContent;
+	JTabbedPane tabbedPane;
+
+	// 이벤트핸들러
+	MyEventHandler handler; // Controller ===> 화면구성 다 한 후 생성자끝부분에서 생성 하기
 
 	public MyBoardApp() {
 		super("::MyBoardApp::");
@@ -28,7 +46,7 @@ public class MyBoardApp extends JFrame {
 		getContentPane().add(panel_1, "Center");
 		panel_1.setLayout(new BorderLayout(0, 0));
 
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		panel_1.add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel panel_2 = new JPanel();
@@ -233,6 +251,16 @@ public class MyBoardApp extends JFrame {
 		scrollPane_2.setViewportView(taList);
 		taList.setBorder(new TitledBorder("글 목 록"));
 
+		// 이벤트 핸들러 생성 => 외부클래스로 구성했다면 this정보를 전달하자
+		handler = new MyEventHandler(this); // this를 넘겨 핸들러가 얘를 제어하도록
+
+		// 이벤트 소스와 연결
+		btJoin.addActionListener(handler); // MyEventHandler가 ActionListener를 상속받아 얻어옴
+		btList.addActionListener(handler);
+		btDel.addActionListener(handler);
+		btClear.addActionListener(handler);
+		bbsWrite.addActionListener(handler);
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(400, 700);
 
@@ -242,5 +270,20 @@ public class MyBoardApp extends JFrame {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new MyBoardApp();
+	}
+
+	// 회원가입 입력필드지우기
+	public void clear1() {
+		this.tfId.setText("");
+		this.tfName.setText("");
+		this.tfPw.setText("");
+		this.tfTel.setText("");
+		this.taMembers.setText("");
+		this.tfId.requestFocus();
+	}
+
+	// 메시지박스
+	public void showMsg(String msg) {
+		JOptionPane.showMessageDialog(this, msg);
 	}
 }
