@@ -33,6 +33,33 @@ public class BbsDAO {
 		}
 	}
 
+	// 게시판 마지막 글번호 가져오기
+	public int lastNum() throws SQLException {
+
+		try {
+			con = DBUtil.getCon();
+			String sql = "SELECT last_number FROM user_sequences";
+			sql += " WHERE sequence_name=?";
+
+			ps = con.prepareStatement(sql);
+			ps.setString(1, "BBS_NO_SEQ");
+
+			rs = ps.executeQuery();
+
+			rs.next();
+			int n = rs.getInt("last_number");
+			return n;
+		} finally {
+			close();
+		}
+
+	}
+
+	// 게시판 마지막 글번호 띄우기
+	public void getNumber() {
+
+	}
+
 	public void close() {
 		try {
 			if (rs != null)

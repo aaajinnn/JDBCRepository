@@ -15,6 +15,7 @@ import java.awt.event.*;
  * 							제어 흐름을 담당하는 부분
  * 
  * */
+import java.util.ArrayList;
 
 // 화면 계층(Presentation Layer) => GUI를 구성
 public class MyBoardApp extends JFrame {
@@ -255,11 +256,22 @@ public class MyBoardApp extends JFrame {
 		handler = new MyEventHandler(this); // this를 넘겨 핸들러가 얘를 제어하도록
 
 		// 이벤트 소스와 연결
+		// member
 		btJoin.addActionListener(handler); // MyEventHandler가 ActionListener를 상속받아 얻어옴
 		btList.addActionListener(handler);
 		btDel.addActionListener(handler);
 		btClear.addActionListener(handler);
+		// bbs
 		bbsWrite.addActionListener(handler);
+		bbsList.addActionListener(handler);
+		bbsDel.addActionListener(handler);
+		bbsFind.addActionListener(handler);
+		// login
+		btLogin.addActionListener(handler);
+
+		// 초기에 글쓰기, 글목록 탭은 비활성화 ==> 로그인해야 활성화
+//		tabbedPane.setEnabledAt(2, false); // 글쓰기
+//		tabbedPane.setEnabledAt(3, false); // 글목록
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(400, 700);
@@ -272,7 +284,7 @@ public class MyBoardApp extends JFrame {
 		new MyBoardApp();
 	}
 
-	// 회원가입 입력필드지우기
+	// 회원가입 입력필드 지우기
 	public void clear1() {
 		this.tfId.setText("");
 		this.tfName.setText("");
@@ -282,8 +294,37 @@ public class MyBoardApp extends JFrame {
 		this.tfId.requestFocus();
 	}
 
+	// 게시판 입력필드 지우기
+	public void clear2() {
+		this.tfNo.setText("");
+		this.tfTitle.setText("");
+		this.tfWriter.setText("");
+		this.taContent.setText("");
+		this.tfNo.requestFocus();
+	}
+
 	// 메시지박스
 	public void showMsg(String msg) {
 		JOptionPane.showMessageDialog(this, msg);
 	}
+
+	// 회원목록 보기
+	public void showMembers(ArrayList<MemberVO> userList) {
+		if (userList == null)
+			return;
+		if (userList.size() == 0) {
+			taMembers.setText("등록된 회원은 없습니다.");
+			return;
+		}
+		taMembers.setText("");
+		taMembers.append("===============================================================\n");
+		taMembers.append("ID\tName\tTel\t\tIndate\n");
+		taMembers.append("===============================================================\n");
+		for (MemberVO user : userList) {
+			taMembers.append(
+					user.getId() + "\t" + user.getName() + "\t" + user.getTel() + "\t\t" + user.getIndate() + "\n");
+		}
+		taMembers.append("===============================================================\n");
+	}
+
 }
