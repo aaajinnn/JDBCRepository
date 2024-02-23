@@ -4,15 +4,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 // 게시판 관련 CRUD 수행 => data layer
 public class BbsDAO {
+	private MemberDAO userDAO;
 
 	private Connection con;
 	private PreparedStatement ps;
 	private ResultSet rs;
 
-	// 게시글 쓰기(시퀀스 - Bbs_no_seq)
+	/** 글쓰기(시퀀스 - Bbs_no_seq) */
 	public int insertBbs(BbsVO vo) throws SQLException {
 		try {
 			con = DBUtil.getCon();
@@ -33,8 +35,38 @@ public class BbsDAO {
 		}
 	}
 
-	// 게시판 마지막 글번호 가져오기
-	public int lastNum() throws SQLException {
+	private ArrayList<BbsVO> makeList(ResultSet rs) throws SQLException {
+		ArrayList<BbsVO> arr = new ArrayList<>();
+		while (rs.next()) {
+			int no = rs.getInt("no");
+			String title = rs.getString("title");
+			String writer = rs.getString("writer");
+			String content = rs.getString("content");
+			java.sql.Date wdate = rs.getDate("wdate");
+			// => 가져온객체를 VO에 담기
+			BbsVO record = new BbsVO(no, title, writer, content, wdate);
+			arr.add(record);
+		}
+
+		return arr;
+	}// ----------------------------
+
+	/** 전체 글목록 가져오기 */
+	public ArrayList<BbsVO> selectAll() throws SQLException {
+		try {
+			con = DBUtil.getCon();
+			String sql = "SELECT * FROM bbs ORDER BY wdate DESC";
+			ps = con.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			return makeList(rs);
+		} finally {
+			close();
+		}
+	}// ----------------------------
+
+	/** 게시판 마지막 글번호 가져오기 */
+	public int selectNum() throws SQLException {
 
 		try {
 			con = DBUtil.getCon();
@@ -55,8 +87,20 @@ public class BbsDAO {
 
 	}
 
-	// 게시판 마지막 글번호 띄우기
-	public void getNumber() {
+	/** 글삭제 */
+	public int deleteBbs(String id) throws SQLException {
+		try {
+			con = DBUtil.getCon();
+			String sql = "DELETE FROM bbs WHERE id=?";
+
+			ps = con.prepareStatement(sql);
+			ps.setString(1, id);
+
+			int n = ps.executeUpdate();
+			return n;
+		} finally {
+			close();
+		}
 
 	}
 

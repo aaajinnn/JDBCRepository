@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.SQLException;
 /* 디자인 패턴
  * - MVC패턴
  * 		- M(Model)데이터를 가지는 부분 DAO, VO ==> Data Layer
@@ -33,8 +34,8 @@ public class MyBoardApp extends JFrame {
 	JTextField tfWriter;
 	JTextField tfTitle;
 	JButton btLogin, btJoin, btDel, btList, btClear;
-	JButton bbsWrite, bbsDel, bbsFind, bbsList;
-	JTextArea taMembers, taList, taContent;
+	JButton bbsWrite, bbsFind, bbsList, bbsDel;
+	JTextArea taMembers, taList, taMyList, taContent;
 	JTabbedPane tabbedPane;
 
 	// 이벤트핸들러
@@ -214,13 +215,6 @@ public class MyBoardApp extends JFrame {
 		bbsWrite.setBackground(Color.PINK);
 		panel_6_1.add(bbsWrite);
 
-		bbsDel = new JButton("글삭제");
-		bbsDel.setActionCommand("글삭제");
-		bbsDel.setForeground(new Color(240, 255, 255));
-		bbsDel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-		bbsDel.setBackground(Color.BLUE);
-		panel_6_1.add(bbsDel);
-
 		bbsFind = new JButton("글검색");
 		bbsFind.setActionCommand("글검색");
 		bbsFind.setForeground(new Color(240, 248, 255));
@@ -238,7 +232,7 @@ public class MyBoardApp extends JFrame {
 		tabbedPane.addTab("게시판 목록", null, panel_5, null);
 		panel_5.setLayout(null);
 
-		JLabel lblNewLabel_4 = new JLabel("::나의 게시판  글목록::");
+		JLabel lblNewLabel_4 = new JLabel(":: 게시판  글목록::");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_4.setFont(new Font("맑은 고딕", Font.BOLD, 20));
 		lblNewLabel_4.setBounds(40, 22, 287, 46);
@@ -252,6 +246,32 @@ public class MyBoardApp extends JFrame {
 		scrollPane_2.setViewportView(taList);
 		taList.setBorder(new TitledBorder("글 목 록"));
 
+		JPanel panel_7 = new JPanel();
+		tabbedPane.addTab("New tab", null, panel_7, null);
+		panel_7.setLayout(null);
+
+		JLabel lblNewLabel_4_1 = new JLabel(":: 나의 게시물::");
+		lblNewLabel_4_1.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_4_1.setFont(new Font("맑은 고딕", Font.BOLD, 20));
+		lblNewLabel_4_1.setBounds(40, 22, 287, 46);
+		panel_7.add(lblNewLabel_4_1);
+
+		JScrollPane scrollPane_2_1 = new JScrollPane();
+		scrollPane_2_1.setBounds(12, 91, 355, 428);
+		panel_7.add(scrollPane_2_1);
+
+		taMyList = new JTextArea();
+		scrollPane_2_1.setViewportView(taMyList);
+		taMyList.setBorder(new TitledBorder("글 목 록"));
+
+		bbsDel = new JButton("글삭제");
+		bbsDel.setForeground(new Color(240, 255, 255));
+		bbsDel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+		bbsDel.setBackground(Color.BLUE);
+		bbsDel.setActionCommand("글삭제");
+		bbsDel.setBounds(266, 536, 88, 46);
+		panel_7.add(bbsDel);
+
 		// 이벤트 핸들러 생성 => 외부클래스로 구성했다면 this정보를 전달하자
 		handler = new MyEventHandler(this); // this를 넘겨 핸들러가 얘를 제어하도록
 
@@ -264,7 +284,6 @@ public class MyBoardApp extends JFrame {
 		// bbs
 		bbsWrite.addActionListener(handler);
 		bbsList.addActionListener(handler);
-		bbsDel.addActionListener(handler);
 		bbsFind.addActionListener(handler);
 		// login
 		btLogin.addActionListener(handler);
@@ -282,6 +301,7 @@ public class MyBoardApp extends JFrame {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new MyBoardApp();
+
 	}
 
 	// 회원가입 입력필드 지우기
@@ -296,11 +316,8 @@ public class MyBoardApp extends JFrame {
 
 	// 게시판 입력필드 지우기
 	public void clear2() {
-		this.tfNo.setText("");
 		this.tfTitle.setText("");
-		this.tfWriter.setText("");
 		this.taContent.setText("");
-		this.tfNo.requestFocus();
 	}
 
 	// 메시지박스
@@ -327,4 +344,32 @@ public class MyBoardApp extends JFrame {
 		taMembers.append("===============================================================\n");
 	}
 
+	// 글번호 보여주기
+	public void showNum() {
+		BbsDAO bbsDAO = new BbsDAO();
+		try {
+			int no = bbsDAO.selectNum();
+			tfNo.setText(String.valueOf(no));
+			tfNo.setEditable(false);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void showBbs(ArrayList<BbsVO> bbsList) {
+		if (bbsList == null)
+			return;
+		if (bbsList.size() == 0) {
+			taList.setText("등록된 게시글이 없습니다.");
+		}
+		taList.setText("");
+		taList.append("===============================================================\n");
+		taList.append("No\tWdate\tWriter\tTitle\t\tContent\n");
+		taList.append("===============================================================\n");
+		for (BbsVO bbs : bbsList) {
+			taList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter() + "\t" + bbs.getTitle() + "\t\t"
+					+ bbs.getContent() + "\n");
+		}
+		taList.append("===============================================================\n");
+	}
 }

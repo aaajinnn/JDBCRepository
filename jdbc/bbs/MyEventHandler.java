@@ -26,7 +26,6 @@ public class MyEventHandler implements ActionListener {
 		Object obj = e.getSource();
 
 		if (obj == gui.btJoin) { // 회원가입
-//			gui.setTitle("이벤트 연동 성공");
 			joinMember();
 
 		} else if (obj == gui.btClear) { // 지우기
@@ -45,12 +44,36 @@ public class MyEventHandler implements ActionListener {
 			login();
 
 		} else if (obj == gui.bbsList) { // 게시판 글목록
+			listBbs();
 
 		} else if (obj == gui.bbsDel) { // 게시글 삭제
 			// 로그인 한 사람이 자신이 쓴 글만 삭제
+			removeBbs();
+
 		} else if (obj == gui.bbsFind) {
 			// title로 검색
 		}
+	}
+
+	// 글삭제
+	private void removeBbs() {
+
+	}
+
+	// 게시판 전체 글목록 가져오기
+	private void listBbs() {
+		try {
+			// userDAO의 selectAll() 호출
+			ArrayList<BbsVO> bbsList = bbsDAO.selectAll();
+
+			// 반환 받은 ArrayList에서 회원정보를 꺼내서 taMembers에 출력
+			gui.showBbs(bbsList);
+			// 전체 글 목록으로 이동
+//			gui.tabbedPane.setSelectedIndex(3);
+		} catch (SQLException e) {
+			gui.showMsg(e.getMessage());
+		}
+
 	}
 
 	// 로그인
@@ -81,10 +104,14 @@ public class MyEventHandler implements ActionListener {
 			} else if (userDAO.loginCheck(loginId, loginPw) == 1) {
 				gui.showMsg("성공적으로 로그인 되었습니다.");
 				// 로그인, 회원가입 탭 비활성화
-//				gui.tabbedPane.setEnabledAt(0, false);
-//				gui.tabbedPane.setEnabledAt(1, false);
-				gui.clear2();
+				gui.tabbedPane.setEnabledAt(0, false);
+				gui.tabbedPane.setEnabledAt(1, false);
 				gui.tabbedPane.setSelectedIndex(2);
+				gui.showNum(); // 글번호 보여주기
+				gui.tfWriter.setText(loginId); // 로그인한 ID 보여주기
+				gui.tfWriter.setEditable(false);
+				listBbs();
+
 			}
 		} catch (SQLException e) {
 
@@ -128,6 +155,7 @@ public class MyEventHandler implements ActionListener {
 				// 글쓰기, 글목록 탭은 비활성화
 				gui.tabbedPane.setEnabledAt(2, false);
 				gui.tabbedPane.setEnabledAt(3, false);
+				gui.tabbedPane.setEnabledAt(4, false);
 				gui.clear1();
 				gui.tabbedPane.setSelectedIndex(0); // 로그인 탭 선택
 			}
@@ -176,14 +204,12 @@ public class MyEventHandler implements ActionListener {
 
 	// 게시판 글쓰기
 	private void border() {
-
 		try {
-			int no = bbsDAO.lastNum();
+			int no = bbsDAO.selectNum();
 			String title = gui.tfTitle.getText();
 			String writer = gui.tfWriter.getText();
 			String content = gui.taContent.getText();
 
-			// 유효성 체크
 			if (title == null || title.equals("")) {
 				gui.showMsg("글제목은 필수 입력사항 입니다.");
 				gui.tfNo.requestFocus();
