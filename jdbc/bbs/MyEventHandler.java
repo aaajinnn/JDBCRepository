@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 public class MyEventHandler implements ActionListener {
 
 	private MyBoardApp gui; // View
@@ -52,6 +54,25 @@ public class MyEventHandler implements ActionListener {
 
 		} else if (obj == gui.bbsFind) {
 			// title로 검색
+			search();
+		}
+	}
+
+	// title로 검색
+	private void search() {
+		try {
+			String schTitle = JOptionPane.showInputDialog(gui, "제목으로 검색합니다.");
+			ArrayList<BbsVO> schBbs = bbsDAO.selectTitle(schTitle);
+
+			if (schTitle != null) {
+//				gui.taList.setText("test");
+				gui.showBbs(schBbs);
+				gui.tabbedPane.setSelectedIndex(3);
+			} else if (schTitle == null || schTitle.equals("")) {
+				gui.showMsg("검색할 제목을 입력해주세요.");
+			}
+		} catch (SQLException e) {
+			gui.showMsg("");
 		}
 	}
 
@@ -63,13 +84,11 @@ public class MyEventHandler implements ActionListener {
 	// 게시판 전체 글목록 가져오기
 	private void listBbs() {
 		try {
-			// userDAO의 selectAll() 호출
-			ArrayList<BbsVO> bbsList = bbsDAO.selectAll();
+			ArrayList<BbsVO> listBbs = bbsDAO.selectAll();
 
-			// 반환 받은 ArrayList에서 회원정보를 꺼내서 taMembers에 출력
-			gui.showBbs(bbsList);
+			gui.showBbs(listBbs);
 			// 전체 글 목록으로 이동
-//			gui.tabbedPane.setSelectedIndex(3);
+			gui.tabbedPane.setSelectedIndex(3);
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
@@ -106,15 +125,27 @@ public class MyEventHandler implements ActionListener {
 				// 로그인, 회원가입 탭 비활성화
 				gui.tabbedPane.setEnabledAt(0, false);
 				gui.tabbedPane.setEnabledAt(1, false);
+				gui.tabbedPane.setEnabledAt(2, true);
+				gui.tabbedPane.setEnabledAt(3, true);
+				gui.tabbedPane.setEnabledAt(4, true);
 				gui.tabbedPane.setSelectedIndex(2);
-				gui.showNum(); // 글번호 보여주기
-				gui.tfWriter.setText(loginId); // 로그인한 ID 보여주기
+
+				// 글번호 보여주기
+				gui.showNum();
+
+				// 로그인한 ID 보여주기
+				gui.tfWriter.setText(loginId);
 				gui.tfWriter.setEditable(false);
+
+				// 게시판 전체 글목록 가져오기
 				listBbs();
 
+				// 로그인한 ID의 글목록 가져오기
+				ArrayList<BbsVO> listBbs = bbsDAO.selectMyBbs(loginId);
+				gui.showMyBbs(listBbs);
 			}
 		} catch (SQLException e) {
-
+			gui.showMsg(e.getMessage());
 		}
 	}
 

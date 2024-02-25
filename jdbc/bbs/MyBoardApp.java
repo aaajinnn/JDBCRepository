@@ -40,6 +40,7 @@ public class MyBoardApp extends JFrame {
 
 	// 이벤트핸들러
 	MyEventHandler handler; // Controller ===> 화면구성 다 한 후 생성자끝부분에서 생성 하기
+	private JTextField tfDelNum;
 
 	public MyBoardApp() {
 		super("::MyBoardApp::");
@@ -243,11 +244,12 @@ public class MyBoardApp extends JFrame {
 		panel_5.add(scrollPane_2);
 
 		taList = new JTextArea();
+		taList.setEditable(false);
 		scrollPane_2.setViewportView(taList);
 		taList.setBorder(new TitledBorder("글 목 록"));
 
 		JPanel panel_7 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_7, null);
+		tabbedPane.addTab("나의 게시물", null, panel_7, null);
 		panel_7.setLayout(null);
 
 		JLabel lblNewLabel_4_1 = new JLabel(":: 나의 게시물::");
@@ -261,6 +263,7 @@ public class MyBoardApp extends JFrame {
 		panel_7.add(scrollPane_2_1);
 
 		taMyList = new JTextArea();
+		taMyList.setEditable(false);
 		scrollPane_2_1.setViewportView(taMyList);
 		taMyList.setBorder(new TitledBorder("글 목 록"));
 
@@ -271,6 +274,16 @@ public class MyBoardApp extends JFrame {
 		bbsDel.setActionCommand("글삭제");
 		bbsDel.setBounds(266, 536, 88, 46);
 		panel_7.add(bbsDel);
+
+		JLabel lblNewLabel_5 = new JLabel("삭제할 글 번호 : ");
+		lblNewLabel_5.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		lblNewLabel_5.setBounds(53, 537, 121, 38);
+		panel_7.add(lblNewLabel_5);
+
+		tfDelNum = new JTextField();
+		tfDelNum.setBounds(170, 545, 72, 30);
+		panel_7.add(tfDelNum);
+		tfDelNum.setColumns(10);
 
 		// 이벤트 핸들러 생성 => 외부클래스로 구성했다면 this정보를 전달하자
 		handler = new MyEventHandler(this); // this를 넘겨 핸들러가 얘를 제어하도록
@@ -293,7 +306,7 @@ public class MyBoardApp extends JFrame {
 //		tabbedPane.setEnabledAt(3, false); // 글목록
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(400, 700);
+		setSize(419, 740);
 
 		setVisible(true);
 	}
@@ -356,6 +369,7 @@ public class MyBoardApp extends JFrame {
 		}
 	}
 
+	// 전체 게시물 보기
 	public void showBbs(ArrayList<BbsVO> bbsList) {
 		if (bbsList == null)
 			return;
@@ -363,13 +377,38 @@ public class MyBoardApp extends JFrame {
 			taList.setText("등록된 게시글이 없습니다.");
 		}
 		taList.setText("");
-		taList.append("===============================================================\n");
+		taList.append(
+				"===============================================================================================\n");
 		taList.append("No\tWdate\tWriter\tTitle\t\tContent\n");
-		taList.append("===============================================================\n");
+		taList.append(
+				"===============================================================================================\n");
 		for (BbsVO bbs : bbsList) {
 			taList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter() + "\t" + bbs.getTitle() + "\t\t"
 					+ bbs.getContent() + "\n");
 		}
-		taList.append("===============================================================\n");
+		taList.append(
+				"===============================================================================================\n");
 	}
+
+	// 나의 게시물 보기
+	public void showMyBbs(ArrayList<BbsVO> myBbsList) {
+		if (myBbsList == null)
+			return;
+		if (myBbsList.size() == 0) {
+			taList.setText("등록된 게시글이 없습니다.");
+		}
+		taMyList.setText("");
+		taMyList.append(
+				"===============================================================================================\n");
+		taMyList.append("No\tWdate\tWriter\tTitle\t\tContent\n");
+		taMyList.append(
+				"===============================================================================================\n");
+		for (BbsVO bbs : myBbsList) {
+			taMyList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter() + "\t" + bbs.getTitle()
+					+ "\t\t" + bbs.getContent() + "\n");
+		}
+		taMyList.append(
+				"===============================================================================================\n");
+	}
+
 }

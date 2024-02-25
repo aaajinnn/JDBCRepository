@@ -65,6 +65,42 @@ public class BbsDAO {
 		}
 	}// ----------------------------
 
+	/** 로그인 한 id의 글목록 가져오기 */
+	public ArrayList<BbsVO> selectMyBbs(String writer) throws SQLException {
+		try {
+			con = DBUtil.getCon();
+			String sql = "SELECT bbs.* FROM java_member mem JOIN bbs bbs";
+			sql += " ON mem.id = bbs.writer";
+			sql += " WHERE writer = ?";
+			sql += " ORDER BY wdate DESC";
+
+			ps = con.prepareStatement(sql);
+			ps.setString(1, writer);
+			rs = ps.executeQuery();
+
+			return makeList(rs);
+
+		} finally {
+			close();
+		}
+	}
+
+	/** title로 검색하여 글목록 가져오기 */
+	public ArrayList<BbsVO> selectTitle(String title) throws SQLException {
+		try {
+			con = DBUtil.getCon();
+			String sql = "SELECT * FROM bbs WHERE title =?";
+
+			ps = con.prepareStatement(sql);
+			ps.setString(1, "%" + title + "%");
+			rs = ps.executeQuery();
+
+			return makeList(rs);
+		} finally {
+			close();
+		}
+	}
+
 	/** 게시판 마지막 글번호 가져오기 */
 	public int selectNum() throws SQLException {
 
@@ -84,7 +120,6 @@ public class BbsDAO {
 		} finally {
 			close();
 		}
-
 	}
 
 	/** 글삭제 */
