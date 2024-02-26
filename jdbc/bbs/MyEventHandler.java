@@ -61,23 +61,37 @@ public class MyEventHandler implements ActionListener {
 	// title로 검색
 	private void search() {
 		try {
-			String schTitle = JOptionPane.showInputDialog(gui, "제목으로 검색합니다.");
+			String schTitle = JOptionPane.showInputDialog(gui, "제목으로 검색합니다.", "글검색", JOptionPane.INFORMATION_MESSAGE);
 			ArrayList<BbsVO> schBbs = bbsDAO.selectTitle(schTitle);
 
-			if (schTitle != null) {
-//				gui.taList.setText("test");
+			if (schTitle == null) {
+				return;
+			}
+			if (schTitle.trim().equals("")) {
+				gui.showMsg("검색할 제목을 입력해주세요.");
+				return;
+			} else if (schTitle != null && !schTitle.trim().equals("")) {
+//				gui.showMsg(schTitle);
 				gui.showBbs(schBbs);
 				gui.tabbedPane.setSelectedIndex(3);
-			} else if (schTitle == null || schTitle.equals("")) {
-				gui.showMsg("검색할 제목을 입력해주세요.");
 			}
 		} catch (SQLException e) {
-			gui.showMsg("");
+			gui.showMsg(e.getMessage());
 		}
 	}
 
 	// 글삭제
 	private void removeBbs() {
+		int delNum = Integer.parseInt(gui.tfDelNum.getText());
+
+		try {
+			if (delNum > bbsDAO.selectNum()) {
+
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -97,9 +111,38 @@ public class MyEventHandler implements ActionListener {
 
 	// 로그인
 	private void login() {
+		// id, pw 값 받기
 		String loginId = gui.loginId.getText();
 		char[] ch = gui.loginPwd.getPassword();
 		String loginPw = new String(ch);
+
+		// 유효성 체크
+//		if (loginId == null || ch == null || loginId.trim().isEmpty() || loginPw.trim().isEmpty()) {
+//			gui.showMsg("아이디와 비밀번호를 입력하세요.");
+//			gui.loginId.requestFocus();
+//			return;
+//		}
+//
+//		// userDAO의 loginCheck(id, pw 호출)
+//		try {
+//			int result = userDAO.loginCheck(loginId, loginPw);
+//			System.out.println("result : " + result);
+//			if (result > 0) {
+//				// 결과값이 1이면 로그인 성공
+//				gui.showMsg(loginId + "님 환영합니다!");
+//				gui.tabbedPane.setEnabledAt(2, true); // 게시판 탭 활성화
+//				gui.tabbedPane.setEnabledAt(3, true);
+//				gui.setTitle(loginId + "님 로그인 중...");
+//				gui.tfWriter.setText(loginId); // 게시글 작성자를 로그인한 사람의 아이디로 설정
+//				gui.tabbedPane.setSelectedIndex(2); // 글목록으로 탭 이동
+//			} else {
+//				gui.showMsg("아이디 또는 비밀번호가 일치하지 않습니다.");
+//				gui.tabbedPane.setEnabledAt(2, false); // 게시판 탭 비활성화
+//				gui.tabbedPane.setEnabledAt(3, false);
+//			}
+//		} catch (SQLException e) {
+//			gui.showMsg(e.getMessage());
+//		}
 
 		if (loginId == null || loginId.trim().equals("")) {
 			gui.showMsg("ID를 입력하셔야 합니다.");
@@ -126,9 +169,9 @@ public class MyEventHandler implements ActionListener {
 				gui.tabbedPane.setEnabledAt(0, false);
 				gui.tabbedPane.setEnabledAt(1, false);
 				gui.tabbedPane.setEnabledAt(2, true);
+				gui.tabbedPane.setSelectedIndex(3);
 				gui.tabbedPane.setEnabledAt(3, true);
 				gui.tabbedPane.setEnabledAt(4, true);
-				gui.tabbedPane.setSelectedIndex(2);
 
 				// 글번호 보여주기
 				gui.showNum();
@@ -147,6 +190,7 @@ public class MyEventHandler implements ActionListener {
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
+
 	}
 
 	// 회원목록

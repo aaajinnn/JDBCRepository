@@ -89,13 +89,14 @@ public class BbsDAO {
 	public ArrayList<BbsVO> selectTitle(String title) throws SQLException {
 		try {
 			con = DBUtil.getCon();
-			String sql = "SELECT * FROM bbs WHERE title =?";
+			String sql = "SELECT * FROM bbs WHERE title LIKE ?";
 
 			ps = con.prepareStatement(sql);
-			ps.setString(1, "%" + title + "%");
+			ps.setString(1, "'%" + title + "%'");
 			rs = ps.executeQuery();
 
 			return makeList(rs);
+
 		} finally {
 			close();
 		}
@@ -126,7 +127,8 @@ public class BbsDAO {
 	public int deleteBbs(String id) throws SQLException {
 		try {
 			con = DBUtil.getCon();
-			String sql = "DELETE FROM bbs WHERE id=?";
+			String sql = "DELETE FROM bbs WHERE writer=";
+			sql += "(SELECT id FROM java_member WHERE id = ?)";
 
 			ps = con.prepareStatement(sql);
 			ps.setString(1, id);

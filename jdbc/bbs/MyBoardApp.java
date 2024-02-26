@@ -33,6 +33,7 @@ public class MyBoardApp extends JFrame {
 	JTextField tfNo;
 	JTextField tfWriter;
 	JTextField tfTitle;
+	JTextField tfDelNum;
 	JButton btLogin, btJoin, btDel, btList, btClear;
 	JButton bbsWrite, bbsFind, bbsList, bbsDel;
 	JTextArea taMembers, taList, taMyList, taContent;
@@ -40,7 +41,6 @@ public class MyBoardApp extends JFrame {
 
 	// 이벤트핸들러
 	MyEventHandler handler; // Controller ===> 화면구성 다 한 후 생성자끝부분에서 생성 하기
-	private JTextField tfDelNum;
 
 	public MyBoardApp() {
 		super("::MyBoardApp::");
