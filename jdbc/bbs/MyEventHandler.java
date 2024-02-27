@@ -61,20 +61,28 @@ public class MyEventHandler implements ActionListener {
 	// title로 검색
 	private void search() {
 		try {
-			String schTitle = JOptionPane.showInputDialog(gui, "제목으로 검색합니다.", "글검색", JOptionPane.INFORMATION_MESSAGE);
-			ArrayList<BbsVO> schBbs = bbsDAO.selectTitle(schTitle);
+			String title = JOptionPane.showInputDialog(gui, "제목을 입력해주세요.", "글검색", JOptionPane.INFORMATION_MESSAGE);
+			ArrayList<BbsVO> schBbs = bbsDAO.selectTitle(title);
 
-			if (schTitle == null) {
+			if (title == null) {
+				gui.tfTitle.requestFocus();
 				return;
-			}
-			if (schTitle.trim().equals("")) {
+			} else if (title.trim().isEmpty()) {
 				gui.showMsg("검색할 제목을 입력해주세요.");
 				return;
-			} else if (schTitle != null && !schTitle.trim().equals("")) {
-//				gui.showMsg(schTitle);
+			}
+
+			gui.showMsg("[" + title + "]을/를 검색합니다.");
+			if (schBbs.size() == 0) {
+				gui.showMsg("등록된 게시글이 없습니다.");
+				return;
+			}
+
+			if (schBbs.size() > 0) {
 				gui.showBbs(schBbs);
 				gui.tabbedPane.setSelectedIndex(3);
 			}
+
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
@@ -82,14 +90,41 @@ public class MyEventHandler implements ActionListener {
 
 	// 글삭제
 	private void removeBbs() {
-		int delNum = Integer.parseInt(gui.tfDelNum.getText());
-
+		String delNum = (String) JOptionPane.showInputDialog(gui, "삭제할 글번호를 입력하세요.", "글삭제",
+				JOptionPane.INFORMATION_MESSAGE);
+		String id = gui.tfId.getText();
+		String writer = gui.tfId.getText();
 		try {
-			if (delNum > bbsDAO.selectNum()) {
 
+			ArrayList<BbsVO> no = bbsDAO.selectmyNum(writer); // 로그인 한 id의 글번호
+
+			gui.showMsg(id + "님이" + delNum + "를 입력함");
+			if (delNum == null) {
+				System.out.println("cancle");
+				return;
 			}
+			if (Integer.parseInt(delNum) > bbsDAO.selectNum()) {
+				gui.showMsg("유효하지 않은 번호입니다.");
+				return;
+			}
+//			int[] arr = new int[bbsDAO.selectMyBbs(writer).size()];
+//			
+//			for (int i = 1; i < bbsDAO.selectNum(); i++) {
+//
+//			}
+			String[] arr = no.toArray(new String[no.size()]);
+			System.out.println(String.valueOf(false));
+//			if (Integer.parseInt(delNum) != bbsDAO.selectMyBbs(writer)) {
+//				gui.showMsg("유효하지 않은 번호입니다.");
+//				return;
+//			}
+			int n = bbsDAO.deleteBbs(id, Integer.parseInt(delNum));
+			String msg = (n > 0) ? "삭제 완료" : "삭제 실패! 다시 시도해주세요";
+			gui.showMsg(msg);
+		} catch (NumberFormatException e) {
+			gui.showMsg("정수를 입력해 주세요.");
+			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

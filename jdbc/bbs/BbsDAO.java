@@ -89,10 +89,10 @@ public class BbsDAO {
 	public ArrayList<BbsVO> selectTitle(String title) throws SQLException {
 		try {
 			con = DBUtil.getCon();
-			String sql = "SELECT * FROM bbs WHERE title LIKE ?";
+			String sql = "SELECT * FROM bbs WHERE title LIKE ? ORDER BY wdate DESC";
 
 			ps = con.prepareStatement(sql);
-			ps.setString(1, "'%" + title + "%'");
+			ps.setString(1, "%" + title + "%");
 			rs = ps.executeQuery();
 
 			return makeList(rs);
@@ -124,14 +124,16 @@ public class BbsDAO {
 	}
 
 	/** 글삭제 */
-	public int deleteBbs(String id) throws SQLException {
+	public int deleteBbs(String id, int no) throws SQLException {
 		try {
 			con = DBUtil.getCon();
-			String sql = "DELETE FROM bbs WHERE writer=";
-			sql += "(SELECT id FROM java_member WHERE id = ?)";
+			String sql = "DELETE FROM bbs";
+			sql += " WHERE writer=(SELECT id FROM java_member WHERE id = ?)";
+			sql += " AND no=?";
 
 			ps = con.prepareStatement(sql);
 			ps.setString(1, id);
+			ps.setInt(2, no);
 
 			int n = ps.executeUpdate();
 			return n;
@@ -139,6 +141,25 @@ public class BbsDAO {
 			close();
 		}
 
+	}
+
+	/** 로그인 한 id의 글번호 가져오기 */
+	public ArrayList<BbsVO> selectmyNum(String writer) throws SQLException {
+		try {
+			con = DBUtil.getCon();
+			String sql = "SELECT no FROM java_member mem JOIN bbs bbs";
+			sql += " ON mem.id = bbs.writer";
+			sql += " WHERE bbs.writer = ?";
+
+			ps = con.prepareStatement(sql);
+			ps.setString(1, writer);
+			rs = ps.executeQuery();
+
+			return makeList(rs);
+
+		} finally {
+			close();
+		}
 	}
 
 	public void close() {

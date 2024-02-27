@@ -33,7 +33,6 @@ public class MyBoardApp extends JFrame {
 	JTextField tfNo;
 	JTextField tfWriter;
 	JTextField tfTitle;
-	JTextField tfDelNum;
 	JButton btLogin, btJoin, btDel, btList, btClear;
 	JButton bbsWrite, bbsFind, bbsList, bbsDel;
 	JTextArea taMembers, taList, taMyList, taContent;
@@ -272,18 +271,8 @@ public class MyBoardApp extends JFrame {
 		bbsDel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		bbsDel.setBackground(Color.BLUE);
 		bbsDel.setActionCommand("글삭제");
-		bbsDel.setBounds(266, 536, 88, 46);
+		bbsDel.setBounds(146, 529, 88, 46);
 		panel_7.add(bbsDel);
-
-		JLabel lblNewLabel_5 = new JLabel("삭제할 글 번호 : ");
-		lblNewLabel_5.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
-		lblNewLabel_5.setBounds(53, 537, 121, 38);
-		panel_7.add(lblNewLabel_5);
-
-		tfDelNum = new JTextField();
-		tfDelNum.setBounds(170, 545, 72, 30);
-		panel_7.add(tfDelNum);
-		tfDelNum.setColumns(10);
 
 		// 이벤트 핸들러 생성 => 외부클래스로 구성했다면 this정보를 전달하자
 		handler = new MyEventHandler(this); // this를 넘겨 핸들러가 얘를 제어하도록
@@ -298,6 +287,7 @@ public class MyBoardApp extends JFrame {
 		bbsWrite.addActionListener(handler);
 		bbsList.addActionListener(handler);
 		bbsFind.addActionListener(handler);
+		bbsDel.addActionListener(handler);
 		// login
 		btLogin.addActionListener(handler);
 
@@ -410,5 +400,4 @@ public class MyBoardApp extends JFrame {
 		taMyList.append(
 				"===============================================================================================\n");
 	}
-
 }
