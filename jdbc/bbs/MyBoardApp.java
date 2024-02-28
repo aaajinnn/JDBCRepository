@@ -292,8 +292,9 @@ public class MyBoardApp extends JFrame {
 		btLogin.addActionListener(handler);
 
 		// 초기에 글쓰기, 글목록 탭은 비활성화 ==> 로그인해야 활성화
-//		tabbedPane.setEnabledAt(2, false); // 글쓰기
-//		tabbedPane.setEnabledAt(3, false); // 글목록
+		tabbedPane.setEnabledAt(2, false); // 게시판 글쓰기
+		tabbedPane.setEnabledAt(3, false); // 게시판 목록
+		tabbedPane.setEnabledAt(4, false); // 나의 게시물
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(419, 740);
@@ -347,7 +348,7 @@ public class MyBoardApp extends JFrame {
 		taMembers.append("===============================================================\n");
 	}
 
-	// 글번호 보여주기
+	// 글번호 보여주기 및 비활성화
 	public void showNum() {
 		BbsDAO bbsDAO = new BbsDAO();
 		try {
@@ -365,6 +366,7 @@ public class MyBoardApp extends JFrame {
 			return;
 		if (bbsList.size() == 0) {
 			taList.setText("등록된 게시글이 없습니다.");
+			return;
 		}
 		taList.setText("");
 		taList.append(
@@ -373,11 +375,23 @@ public class MyBoardApp extends JFrame {
 		taList.append(
 				"===============================================================================================\n");
 		for (BbsVO bbs : bbsList) {
-			taList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter() + "\t" + bbs.getTitle() + "\t\t"
-					+ bbs.getContent() + "\n");
+			taList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter()
+					+ String.format("%20s", bbs.getTitle()) + "\t\t" + String.format("%-20s", bbs.getContent()) + "\n");
 		}
 		taList.append(
 				"===============================================================================================\n");
+	}
+
+	// 전체 게시물 띄우기
+	public void bbsAll() {
+		ArrayList<BbsVO> listBbs;
+		BbsDAO bbsDAO = new BbsDAO();
+		try {
+			listBbs = bbsDAO.selectAll();
+			showBbs(listBbs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// 나의 게시물 보기
@@ -385,7 +399,8 @@ public class MyBoardApp extends JFrame {
 		if (myBbsList == null)
 			return;
 		if (myBbsList.size() == 0) {
-			taList.setText("등록된 게시글이 없습니다.");
+			taMyList.setText("등록된 게시글이 없습니다.");
+			return;
 		}
 		taMyList.setText("");
 		taMyList.append(
@@ -394,10 +409,11 @@ public class MyBoardApp extends JFrame {
 		taMyList.append(
 				"===============================================================================================\n");
 		for (BbsVO bbs : myBbsList) {
-			taMyList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter() + "\t" + bbs.getTitle()
-					+ "\t\t" + bbs.getContent() + "\n");
+			taMyList.append(bbs.getNo() + "\t" + bbs.getWdate() + "\t" + bbs.getWriter()
+					+ String.format("%20s", bbs.getTitle()) + "\t\t" + String.format("%-20s", bbs.getContent()) + "\n");
 		}
 		taMyList.append(
 				"===============================================================================================\n");
 	}
+
 }

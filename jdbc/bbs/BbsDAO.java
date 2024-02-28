@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 // 게시판 관련 CRUD 수행 => data layer
 public class BbsDAO {
-	private MemberDAO userDAO;
 
 	private Connection con;
 	private PreparedStatement ps;
@@ -47,9 +46,8 @@ public class BbsDAO {
 			BbsVO record = new BbsVO(no, title, writer, content, wdate);
 			arr.add(record);
 		}
-
 		return arr;
-	}// ----------------------------
+	}
 
 	/** 전체 글목록 가져오기 */
 	public ArrayList<BbsVO> selectAll() throws SQLException {
@@ -60,10 +58,11 @@ public class BbsDAO {
 
 			rs = ps.executeQuery();
 			return makeList(rs);
+
 		} finally {
 			close();
 		}
-	}// ----------------------------
+	}
 
 	/** 로그인 한 id의 글목록 가져오기 */
 	public ArrayList<BbsVO> selectMyBbs(String writer) throws SQLException {
@@ -104,7 +103,6 @@ public class BbsDAO {
 
 	/** 게시판 마지막 글번호 가져오기 */
 	public int selectNum() throws SQLException {
-
 		try {
 			con = DBUtil.getCon();
 			String sql = "SELECT last_number FROM user_sequences";
@@ -118,6 +116,7 @@ public class BbsDAO {
 			rs.next();
 			int n = rs.getInt("last_number");
 			return n;
+
 		} finally {
 			close();
 		}
@@ -137,29 +136,11 @@ public class BbsDAO {
 
 			int n = ps.executeUpdate();
 			return n;
-		} finally {
-			close();
-		}
-
-	}
-
-	/** 로그인 한 id의 글번호 가져오기 */
-	public ArrayList<BbsVO> selectmyNum(String writer) throws SQLException {
-		try {
-			con = DBUtil.getCon();
-			String sql = "SELECT no FROM java_member mem JOIN bbs bbs";
-			sql += " ON mem.id = bbs.writer";
-			sql += " WHERE bbs.writer = ?";
-
-			ps = con.prepareStatement(sql);
-			ps.setString(1, writer);
-			rs = ps.executeQuery();
-
-			return makeList(rs);
 
 		} finally {
 			close();
 		}
+
 	}
 
 	public void close() {

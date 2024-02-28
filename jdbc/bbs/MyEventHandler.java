@@ -86,19 +86,15 @@ public class MyEventHandler implements ActionListener {
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
-	}
+	}// search()-----------------------
 
 	// 글삭제
 	private void removeBbs() {
 		String delNum = (String) JOptionPane.showInputDialog(gui, "삭제할 글번호를 입력하세요.", "글삭제",
 				JOptionPane.INFORMATION_MESSAGE);
-		String id = gui.tfId.getText();
-		String writer = gui.tfId.getText();
+		String id = gui.loginId.getText();
 		try {
-
-			ArrayList<BbsVO> no = bbsDAO.selectmyNum(writer); // 로그인 한 id의 글번호
-
-			gui.showMsg(id + "님이" + delNum + "를 입력함");
+//			gui.showMsg(id + "님이" + delNum + "를 입력함");
 			if (delNum == null) {
 				System.out.println("cancle");
 				return;
@@ -107,20 +103,18 @@ public class MyEventHandler implements ActionListener {
 				gui.showMsg("유효하지 않은 번호입니다.");
 				return;
 			}
-//			int[] arr = new int[bbsDAO.selectMyBbs(writer).size()];
-//			
-//			for (int i = 1; i < bbsDAO.selectNum(); i++) {
-//
-//			}
-			String[] arr = no.toArray(new String[no.size()]);
-			System.out.println(String.valueOf(false));
-//			if (Integer.parseInt(delNum) != bbsDAO.selectMyBbs(writer)) {
-//				gui.showMsg("유효하지 않은 번호입니다.");
-//				return;
-//			}
+
 			int n = bbsDAO.deleteBbs(id, Integer.parseInt(delNum));
-			String msg = (n > 0) ? "삭제 완료" : "삭제 실패! 다시 시도해주세요";
+			String msg = (n > 0) ? "삭제 완료" : "삭제 실패! 다시 시도해주세요.";
 			gui.showMsg(msg);
+
+			// 로그인한 ID의 글목록 가져오기
+			ArrayList<BbsVO> listBbs = bbsDAO.selectMyBbs(id);
+			gui.showMyBbs(listBbs);
+
+			// 삭제 후 전체 글목록도 수정
+			gui.bbsAll();
+
 		} catch (NumberFormatException e) {
 			gui.showMsg("정수를 입력해 주세요.");
 			e.printStackTrace();
@@ -128,21 +122,13 @@ public class MyEventHandler implements ActionListener {
 			e.printStackTrace();
 		}
 
-	}
+	}// removeBbs()-----------------------
 
-	// 게시판 전체 글목록 가져오기
+	// 전체 글 목록으로 이동
 	private void listBbs() {
-		try {
-			ArrayList<BbsVO> listBbs = bbsDAO.selectAll();
-
-			gui.showBbs(listBbs);
-			// 전체 글 목록으로 이동
-			gui.tabbedPane.setSelectedIndex(3);
-		} catch (SQLException e) {
-			gui.showMsg(e.getMessage());
-		}
-
-	}
+		gui.bbsAll();
+		gui.tabbedPane.setSelectedIndex(3);
+	}// listBbs()-----------------------
 
 	// 로그인
 	private void login() {
@@ -152,33 +138,6 @@ public class MyEventHandler implements ActionListener {
 		String loginPw = new String(ch);
 
 		// 유효성 체크
-//		if (loginId == null || ch == null || loginId.trim().isEmpty() || loginPw.trim().isEmpty()) {
-//			gui.showMsg("아이디와 비밀번호를 입력하세요.");
-//			gui.loginId.requestFocus();
-//			return;
-//		}
-//
-//		// userDAO의 loginCheck(id, pw 호출)
-//		try {
-//			int result = userDAO.loginCheck(loginId, loginPw);
-//			System.out.println("result : " + result);
-//			if (result > 0) {
-//				// 결과값이 1이면 로그인 성공
-//				gui.showMsg(loginId + "님 환영합니다!");
-//				gui.tabbedPane.setEnabledAt(2, true); // 게시판 탭 활성화
-//				gui.tabbedPane.setEnabledAt(3, true);
-//				gui.setTitle(loginId + "님 로그인 중...");
-//				gui.tfWriter.setText(loginId); // 게시글 작성자를 로그인한 사람의 아이디로 설정
-//				gui.tabbedPane.setSelectedIndex(2); // 글목록으로 탭 이동
-//			} else {
-//				gui.showMsg("아이디 또는 비밀번호가 일치하지 않습니다.");
-//				gui.tabbedPane.setEnabledAt(2, false); // 게시판 탭 비활성화
-//				gui.tabbedPane.setEnabledAt(3, false);
-//			}
-//		} catch (SQLException e) {
-//			gui.showMsg(e.getMessage());
-//		}
-
 		if (loginId == null || loginId.trim().equals("")) {
 			gui.showMsg("ID를 입력하셔야 합니다.");
 			gui.loginId.requestFocus();
@@ -200,33 +159,39 @@ public class MyEventHandler implements ActionListener {
 				return;
 			} else if (userDAO.loginCheck(loginId, loginPw) == 1) {
 				gui.showMsg("성공적으로 로그인 되었습니다.");
+				gui.setTitle(loginId + "님 로그인 중...");
 				// 로그인, 회원가입 탭 비활성화
 				gui.tabbedPane.setEnabledAt(0, false);
 				gui.tabbedPane.setEnabledAt(1, false);
 				gui.tabbedPane.setEnabledAt(2, true);
-				gui.tabbedPane.setSelectedIndex(3);
+				gui.tabbedPane.setSelectedIndex(2);
 				gui.tabbedPane.setEnabledAt(3, true);
 				gui.tabbedPane.setEnabledAt(4, true);
 
-				// 글번호 보여주기
+				// 글번호 보여주기 및 비활성화
 				gui.showNum();
 
-				// 로그인한 ID 보여주기
+				// 로그인한 ID 보여주기 및 비활성화
 				gui.tfWriter.setText(loginId);
 				gui.tfWriter.setEditable(false);
 
 				// 게시판 전체 글목록 가져오기
-				listBbs();
+				gui.bbsAll();
 
 				// 로그인한 ID의 글목록 가져오기
-				ArrayList<BbsVO> listBbs = bbsDAO.selectMyBbs(loginId);
-				gui.showMyBbs(listBbs);
+				ArrayList<BbsVO> listMyBbs = bbsDAO.selectMyBbs(loginId);
+				gui.showMyBbs(listMyBbs);
+
+				// 로그인한 ID의 글목록이 없을때 삭제버튼 비활성화
+				if (listMyBbs.size() == 0) {
+					gui.bbsDel.setEnabled(false);
+				}
 			}
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
 
-	}
+	}// login()-----------------------------
 
 	// 회원목록
 	private void listMember() {
@@ -239,7 +204,7 @@ public class MyEventHandler implements ActionListener {
 		} catch (SQLException e) {
 			gui.showMsg(e.getMessage());
 		}
-	}// listMember()-----------------------
+	}// listMember()-------------------------
 
 	// 회원탈퇴
 	private void removeMember() {
@@ -291,6 +256,18 @@ public class MyEventHandler implements ActionListener {
 			return;
 
 		}
+		if (id.length() > 20) {
+			gui.showMsg("아이디는 20자 이내로 입력하세요.");
+			gui.tfId.setText("");
+			gui.tfId.requestFocus();
+			return;
+		} else if (pw.length() > 10) {
+			gui.showMsg("비밀번호는 10자 이내로 입력하세요.");
+			gui.tfPw.setText("");
+			gui.tfPw.requestFocus();
+			return;
+		}
+
 		// 3. 입력값들을 MemberVO객체에 담아주기
 		MemberVO user = new MemberVO(id, pw, name, tel, null); // 가입일은 sysdate로 처리할것이기 때문에 null로 처리
 
@@ -333,6 +310,13 @@ public class MyEventHandler implements ActionListener {
 			if (n > 0) {
 				gui.showMsg("글쓰기 완료");
 				gui.clear2();
+
+				// 게시판 전체 글목록 가져와 글목록으로 이동
+				listBbs();
+
+				// 로그인한 ID의 글목록 가져오기
+				ArrayList<BbsVO> listMyBbs = bbsDAO.selectMyBbs(writer);
+				gui.showMyBbs(listMyBbs);
 			}
 
 		} catch (SQLException e) {

@@ -71,7 +71,6 @@ public class MemberDAO {
 			MemberVO record = new MemberVO(id, pw, name, tel, indate);
 			arr.add(record);
 		}
-
 		return arr;
 	}// ----------------------------
 
@@ -109,6 +108,7 @@ public class MemberDAO {
 			}
 
 			return null; // 해당 id가 없는 경우
+
 		} finally {
 			close();
 		}
